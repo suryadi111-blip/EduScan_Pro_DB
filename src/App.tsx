@@ -23,7 +23,7 @@ import { ArchitectureGuideView } from './components/ArchitectureGuideView';
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const userEmail = 'suryadi111@guru.smp.belajar.id';
-
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRabA0NiKtZ1pK8Sguile9-U46T30qKUE5XGQABrqfjrav8rkA30OZarc4xkoBbB46/exec';
   // State management for 7 modules
   const [siswaList, setSiswaList] = useState<Siswa[]>(INITIAL_SISWA);
   const [guruList, setGuruList] = useState<Guru[]>(INITIAL_GURU);
@@ -33,21 +33,55 @@ export default function App() {
   const [logPelanggaran, setLogPelanggaran] = useState<LogPelanggaran[]>(INITIAL_LOG_PELANGGARAN);
   const [logHaid, setLogHaid] = useState<LogMasaHaid[]>(INITIAL_LOG_HAID);
 
-  // Scan handlers
+  // Scan handlers dengan integrasi Google Sheets
   const handleAddAbsensiSiswa = (entry: LogAbsensiSiswa) => {
     setLogAbsensiSiswa(prev => [entry, ...prev]);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addAbsensiSiswa', data: entry }),
+    }).catch(err => console.error('Gagal mengirim absensi siswa:', err));
   };
+
   const handleAddAbsensiGuru = (entry: LogAbsensiGuru) => {
     setLogAbsensiGuru(prev => [entry, ...prev]);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addAbsensiGuru', data: entry }),
+    }).catch(err => console.error('Gagal mengirim absensi guru:', err));
   };
+
   const handleAddJelantah = (entry: LogMinyakJelantah) => {
     setLogJelantah(prev => [entry, ...prev]);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addJelantah', data: entry }),
+    }).catch(err => console.error('Gagal mengirim data jelantah:', err));
   };
+
   const handleAddPelanggaran = (entry: LogPelanggaran) => {
     setLogPelanggaran(prev => [entry, ...prev]);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addPelanggaran', data: entry }),
+    }).catch(err => console.error('Gagal mengirim data pelanggaran:', err));
   };
+
   const handleAddHaid = (entry: LogMasaHaid) => {
     setLogHaid(prev => [entry, ...prev]);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addHaid', data: entry }),
+    }).catch(err => console.error('Gagal mengirim data haid:', err));
   };
 
   return (
