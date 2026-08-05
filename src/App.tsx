@@ -35,7 +35,6 @@ export default function App() {
   const userEmail = 'suryadi111@guru.smp.belajar.id';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRabA0NiKtZ1pK8Sguile9-U46T30qKUE5XGQABrqfjrav8rkA30OZarc4xkoBbB46/exec';
 
-  // State management diselaraskan menggunakan Data_Master_Siswa & Data_Master_Guru
   const [siswaList, setSiswaList] = useState<Data_Master_Siswa[]>(INITIAL_DATA_MASTER_SISWA);
   const [guruList, setGuruList] = useState<Data_Master_Guru[]>(INITIAL_DATA_MASTER_GURU);
   const [logAbsensiSiswa, setLogAbsensiSiswa] = useState<LogAbsensiSiswa[]>(INITIAL_LOG_ABSENSI_SISWA);
@@ -46,63 +45,55 @@ export default function App() {
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Auto-fetch data dari Google Sheets via Apps Script saat aplikasi dimuat
   useEffect(() => {
     const fetchSheetData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(APPS_SCRIPT_URL, {
+        // Menambahkan parameter timestamp agar browser tidak menembak cache data lama
+        const res = await fetch(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`, {
           method: 'GET',
           redirect: 'follow',
         });
-        const result = await res.json();
+        
+        const responseJson = await res.json();
+        console.log('--- RESPONS API GOOGLE SHEETS ---', responseJson);
 
-        // Mengurai hasil pemanggilan jika status success atau data ada
-        const data = result.data || result;
+        // Mengakomodasi berbagai struktur return dari Apps Script
+        const data = responseJson.data || responseJson;
 
         if (data) {
-          // Sync Data_Master_Siswa
-          if (data.Data_Master_Siswa && data.Data_Master_Siswa.length > 0) {
+          // Mapping Data Master Siswa
+          if (data.Data_Master_Siswa && Array.isArray(data.Data_Master_Siswa) && data.Data_Master_Siswa.length > 0) {
             const mappedSiswa: Data_Master_Siswa[] = data.Data_Master_Siswa.map((item: any) => ({
-              nis: String(item.NIS || item.nis || ''),
-              nama: item['Nama Siswa'] || item.Nama || item.nama || '',
-              kelas: item.Kelas || item.kelas || '',
-              jenisKelamin: (item['Jenis Kelamin'] === 'P' || item['Jenis Kelamin'] === 'Perempuan') ? 'Perempuan' : 'Laki-laki',
-              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || '')
+              nis: String(item.NIS || item.nis || item['NIS/NISN'] || ''),
+              nama: item['Nama Siswa'] || item.Nama || item.nama || item['Nama Lengkap'] || '',
+              kelas: String(item.Kelas || item.kelas || ''),
+              jenisKelamin: (item['Jenis Kelamin'] === 'P' || item['Jenis Kelamin'] === 'Perempuan' || item.jenisKelamin === 'P') ? 'Perempuan' : 'Laki-laki',
+              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || item.no_hp || '')
             }));
             setSiswaList(mappedSiswa);
           }
 
-          // Sync Data_Master_Guru
-          if (data.Data_Master_Guru && data.Data_Master_Guru.length > 0) {
+          // Mapping Data Master Guru
+          if (data.Data_Master_Guru && Array.isArray(data.Data_Master_Guru) && data.Data_Master_Guru.length > 0) {
             const mappedGuru: Data_Master_Guru[] = data.Data_Master_Guru.map((item: any) => ({
-              nip: String(item.NIP || item.nip || ''),
-              nama: item['Nama Guru'] || item.Nama || item.nama || '',
+              nip: String(item.NIP || item.nip || item.Nip || ''),
+              nama: item['Nama Guru'] || item.Nama || item.nama || item['Nama Lengkap'] || '',
               jabatan: item.Jabatan || item.jabatan || '',
-              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || '')
+              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || item.no_hp || '')
             }));
             setGuruList(mappedGuru);
           }
 
-          // Sync Logs
-          if (data.Log_Absensi_Siswa && data.Log_Absensi_Siswa.length > 0) {
-            setLogAbsensiSiswa(data.Log_Absensi_Siswa);
-          }
-          if (data.Log_Absensi_Guru && data.Log_Absensi_Guru.length > 0) {
-            setLogAbsensiGuru(data.Log_Absensi_Guru);
-          }
-          if (data.Log_Minyak_Jelantah && data.Log_Minyak_Jelantah.length > 0) {
-            setLogJelantah(data.Log_Minyak_Jelantah);
-          }
-          if (data.Log_Pelanggaran && data.Log_Pelanggaran.length > 0) {
-            setLogPelanggaran(data.Log_Pelanggaran);
-          }
-          if (data.Log_Masa_Haid && data.Log_Masa_Haid.length > 0) {
-            setLogHaid(data.Log_Masa_Haid);
-          }
+          // Mapping Log Tables
+          if (data.Log_Absensi_Siswa && Array.isArray(data.Log_Absensi_Siswa)) setLogAbsensiSiswa(data.Log_Absensi_Siswa);
+          if (data.Log_Absensi_Guru && Array.isArray(data.Log_Absensi_Guru)) setLogAbsensiGuru(data.Log_Absensi_Guru);
+          if (data.Log_Minyak_Jelantah && Array.isArray(data.Log_Minyak_Jelantah)) setLogJelantah(data.Log_Minyak_Jelantah);
+          if (data.Log_Pelanggaran && Array.isArray(data.Log_Pelanggaran)) setLogPelanggaran(data.Log_Pelanggaran);
+          if (data.Log_Masa_Haid && Array.isArray(data.Log_Masa_Haid)) setLogHaid(data.Log_Masa_Haid);
         }
       } catch (err) {
-        console.error('Gagal memuat data dari Google Sheets API:', err);
+        console.error('Error saat fetch data:', err);
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +110,7 @@ export default function App() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'addAbsensiSiswa', data: entry }),
-    }).catch(err => console.error('Gagal mengirim absensi siswa:', err));
+    }).catch(err => console.error(err));
   };
 
   const handleAddAbsensiGuru = (entry: LogAbsensiGuru) => {
@@ -129,7 +120,7 @@ export default function App() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'addAbsensiGuru', data: entry }),
-    }).catch(err => console.error('Gagal mengirim absensi guru:', err));
+    }).catch(err => console.error(err));
   };
 
   const handleAddJelantah = (entry: LogMinyakJelantah) => {
@@ -139,7 +130,7 @@ export default function App() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'addJelantah', data: entry }),
-    }).catch(err => console.error('Gagal mengirim data jelantah:', err));
+    }).catch(err => console.error(err));
   };
 
   const handleAddPelanggaran = (entry: LogPelanggaran) => {
@@ -149,7 +140,7 @@ export default function App() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'addPelanggaran', data: entry }),
-    }).catch(err => console.error('Gagal mengirim data pelanggaran:', err));
+    }).catch(err => console.error(err));
   };
 
   const handleAddHaid = (entry: LogMasaHaid) => {
@@ -159,19 +150,17 @@ export default function App() {
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'addHaid', data: entry }),
-    }).catch(err => console.error('Gagal mengirim data haid:', err));
+    }).catch(err => console.error(err));
   };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans selection:bg-blue-600 selection:text-white flex flex-col">
-      {/* Header & Navigation */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         userEmail={userEmail}
       />
 
-      {/* Main Content Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
           <DashboardView
@@ -223,36 +212,24 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'expressions' && (
-          <ExpressionsView />
-        )}
-
-        {activeTab === 'apps_script' && (
-          <AppsScriptView />
-        )}
-
-        {activeTab === 'troubleshooter' && (
-          <TroubleshooterView />
-        )}
-
-        {activeTab === 'architecture' && (
-          <ArchitectureGuideView />
-        )}
+        {activeTab === 'expressions' && <ExpressionsView />}
+        {activeTab === 'apps_script' && <AppsScriptView />}
+        {activeTab === 'troubleshooter' && <TroubleshooterView />}
+        {activeTab === 'architecture' && <ArchitectureGuideView />}
       </main>
 
-      {/* High Density Footer */}
       <footer className="bg-white border-t border-slate-200 px-6 py-2.5 text-[11px] text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto">
         <div className="flex items-center gap-4">
           <span><strong>Database:</strong> Google Sheets (Main_App_v4.2)</span>
           <span className="hidden sm:inline">|</span>
-          <span><strong>Connected:</strong> AppSheet Editor & Google Apps Script API</span>
+          <span><strong>Connected:</strong> Apps Script API</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 font-semibold text-emerald-600">
             <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-ping'}`}></span>
-            {isLoading ? 'Syncing Google Sheets...' : 'Server Status: OK (99.98% Uptime)'}
+            {isLoading ? 'Syncing Google Sheets...' : 'Server Status: OK'}
           </span>
-          <span>Build ID: 2026.08.04.GAS</span>
+          <span>Build ID: 2026.08.05.SYNC</span>
         </div>
       </footer>
     </div>
