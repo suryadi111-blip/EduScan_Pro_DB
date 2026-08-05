@@ -49,16 +49,16 @@ export default function App() {
     const fetchSheetData = async () => {
       try {
         setIsLoading(true);
-        // Menambahkan parameter timestamp agar browser tidak menembak cache data lama
-        const res = await fetch(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`, {
-          method: 'GET',
-          redirect: 'follow',
-        });
+        // Menghapus 'redirect: follow' & custom headers untuk mencegah pemblokiran CORS oleh browser
+        const res = await fetch(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`);
         
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+
         const responseJson = await res.json();
         console.log('--- RESPONS API GOOGLE SHEETS ---', responseJson);
 
-        // Mengakomodasi berbagai struktur return dari Apps Script
         const data = responseJson.data || responseJson;
 
         if (data) {
@@ -102,7 +102,7 @@ export default function App() {
     fetchSheetData();
   }, [APPS_SCRIPT_URL]);
 
-  // Handlers
+  // Handlers POST data ke Google Sheets
   const handleAddAbsensiSiswa = (entry: LogAbsensiSiswa) => {
     setLogAbsensiSiswa(prev => [entry, ...prev]);
     fetch(APPS_SCRIPT_URL, {
