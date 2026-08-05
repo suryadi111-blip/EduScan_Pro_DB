@@ -8,21 +8,19 @@ export type ActiveTab =
   | 'troubleshooter'
   | 'architecture';
 
-export interface Siswa {
-  nis: string; // Primary Key Text
-  nama: string; // Label
+export interface Data_Master_Siswa {
+  nis: string;
+  nama: string;
   kelas: string;
-  jenisKelamin: 'L' | 'P';
+  jenisKelamin: string;
   noHp: string;
-  qrCodeUrl?: string;
 }
 
-export interface Guru {
-  nip: string; // Primary Key Text
-  nama: string; // Label
-  jabatan: string; // Jabatan / Mapel
+export interface Data_Master_Guru {
+  nip: string;
+  nama: string;
+  jabatan: string;
   noHp: string;
-  qrCodeUrl?: string;
 }
 
 export interface LogAbsensiSiswa {
