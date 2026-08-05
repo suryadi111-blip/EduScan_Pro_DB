@@ -1,0 +1,6 @@
+{
+  "name": "Aplikasi Manajemen Sekolah Berbasis QR Code",
+  "description": "Sistem Manajemen Sekolah & Hub Integrasi AppSheet, Google Workspace, QR Code Scanner/Generator, Apps Script, dan Analytics Dashboard.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
