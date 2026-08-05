@@ -32,39 +32,12 @@ export const INITIAL_GURU: Guru[] = [
   { nip: '199505122020011005', nama: 'Rahmat Hidayat, S.Or.', jabatan: 'Guru PJOK / Kesiswaan', noHp: '081122334459' },
 ];
 
-const todayStr = new Date().toISOString().split('T')[0];
-
-export const INITIAL_LOG_ABSENSI_SISWA: LogAbsensiSiswa[] = [
-  { idAbsen: 'ABS-S-001', tanggal: todayStr, nis: '2024001', namaSiswa: 'Ahmad Fauzi', kelas: '7-A', status: 'Hadir', waktuScan: '06:45:10' },
-  { idAbsen: 'ABS-S-002', tanggal: todayStr, nis: '2024002', namaSiswa: 'Anisa Rahmawati', kelas: '7-A', status: 'Hadir', waktuScan: '06:50:22' },
-  { idAbsen: 'ABS-S-003', tanggal: todayStr, nis: '2024003', namaSiswa: 'Budi Santoso', kelas: '7-B', status: 'Sakit', waktuScan: '07:00:00' },
-  { idAbsen: 'ABS-S-004', tanggal: todayStr, nis: '2024004', namaSiswa: 'Citra Dewi', kelas: '7-B', status: 'Hadir', waktuScan: '06:55:05' },
-  { idAbsen: 'ABS-S-005', tanggal: todayStr, nis: '2024005', namaSiswa: 'Daffa Pratama', kelas: '8-A', status: 'Izin', waktuScan: '07:15:30' },
-  { idAbsen: 'ABS-S-006', tanggal: todayStr, nis: '2024006', namaSiswa: 'Eka Nurjanah', kelas: '8-A', status: 'Hadir', waktuScan: '06:40:15' },
-];
-
-export const INITIAL_LOG_ABSENSI_GURU: LogAbsensiGuru[] = [
-  { idAbsen: 'ABS-G-001', tanggal: todayStr, nip: '198501012010011001', namaGuru: 'Drs. Supriyadi, M.Pd.', tipeAbsen: 'Masuk', waktuScan: '06:30:00' },
-  { idAbsen: 'ABS-G-002', tanggal: todayStr, nip: '198803152012022002', namaGuru: 'Siti Maryam, S.Pd.', tipeAbsen: 'Masuk', waktuScan: '06:35:12' },
-  { idAbsen: 'ABS-G-003', tanggal: todayStr, nip: '199007202015031003', namaGuru: 'Bambang Irawan, S.Si.', tipeAbsen: 'Masuk', waktuScan: '06:42:00' },
-  { idAbsen: 'ABS-G-004', tanggal: todayStr, nip: '199505122020011005', namaGuru: 'Rahmat Hidayat, S.Or.', tipeAbsen: 'Dinas Out', waktuScan: '08:00:00' },
-];
-
-export const INITIAL_LOG_JELANTAH: LogMinyakJelantah[] = [
-  { idTransaksi: 'JEL-001', tanggalWaktu: `${todayStr} 08:30:00`, nis: '2024001', namaSiswa: 'Ahmad Fauzi', kelas: '7-A', jumlahLiter: 2.5, petugas: 'Pak Bambang (Pembina OSIS)' },
-  { idTransaksi: 'JEL-002', tanggalWaktu: `${todayStr} 09:15:00`, nis: '2024004', namaSiswa: 'Citra Dewi', kelas: '7-B', jumlahLiter: 5.0, petugas: 'Pak Bambang (Pembina OSIS)' },
-  { idTransaksi: 'JEL-003', tanggalWaktu: `${todayStr} 10:00:00`, nis: '2024008', namaSiswa: 'Gita Gutawa', kelas: '9-A', jumlahLiter: 1.5, petugas: 'Bu Siti (Koperasi Eco)' },
-];
-
-export const INITIAL_LOG_PELANGGARAN: LogPelanggaran[] = [
-  { idPelanggaran: 'PLG-001', tanggalWaktu: `${todayStr} 07:15:00`, nis: '2024005', namaSiswa: 'Daffa Pratama', kelas: '8-A', jenisPelanggaran: 'Terlambat Masuk Sekolah (>15 Menit)', poin: 5, petugas: 'Rahmat Hidayat, S.Or. (Tim BK)', fotoBukti: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=300' },
-  { idPelanggaran: 'PLG-002', tanggalWaktu: `${todayStr} 09:45:00`, nis: '2024007', namaSiswa: 'Fajar Hidayat', kelas: '8-B', jenisPelanggaran: 'Seragam Tidak Lengkap / Tanpa Atribut', poin: 10, petugas: 'Rahmat Hidayat, S.Or. (Tim BK)', fotoBukti: '' },
-];
-
-export const INITIAL_LOG_HAID: LogMasaHaid[] = [
-  { idCatatan: 'HAD-001', tanggalMulai: '2026-08-01', tanggalSelesai: '2026-08-06', nis: '2024002', namaSiswa: 'Anisa Rahmawati', catatan: 'Nyeri perut ringan hari ke-1, telah diberi obat di UKS.' },
-  { idCatatan: 'HAD-002', tanggalMulai: '2026-08-03', tanggalSelesai: '', nis: '2024006', namaSiswa: 'Eka Nurjanah', catatan: 'Mulai haid hari ini, dispen tidak ikutan olahraga lari.' },
-];
+// DATA TRANSASI / LOG DIRESET KE 0 (ARRAY KOSONG)
+export const INITIAL_LOG_ABSENSI_SISWA: LogAbsensiSiswa[] = [];
+export const INITIAL_LOG_ABSENSI_GURU: LogAbsensiGuru[] = [];
+export const INITIAL_LOG_JELANTAH: LogMinyakJelantah[] = [];
+export const INITIAL_LOG_PELANGGARAN: LogPelanggaran[] = [];
+export const INITIAL_LOG_HAID: LogMasaHaid[] = [];
 
 export const APPSHEET_EXPRESSIONS: AppSheetExpression[] = [
   {
@@ -255,7 +228,7 @@ function GENERATE_QR_CANVA(data) {
 // 1. HANDLER HTTP POST (Menerima Data Pemindaian QR Code)
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.tryLock(10000); // Mencegah race condition saaat banyak QR discan bersamaan
+  lock.tryLock(10000); // Mencegah race condition saat banyak QR discan bersamaan
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
