@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ActiveTab, Siswa, Guru, LogAbsensiSiswa, LogAbsensiGuru, LogMinyakJelantah, LogPelanggaran, LogMasaHaid } from './types';
+import { 
+  ActiveTab, 
+  Data_Master_Siswa, 
+  Data_Master_Guru, 
+  LogAbsensiSiswa, 
+  LogAbsensiGuru, 
+  LogMinyakJelantah, 
+  LogPelanggaran, 
+  LogMasaHaid 
+} from './types';
+
 import {
-  INITIAL_SISWA,
-  INITIAL_GURU,
+  INITIAL_DATA_MASTER_SISWA,
+  INITIAL_DATA_MASTER_GURU,
   INITIAL_LOG_ABSENSI_SISWA,
   INITIAL_LOG_ABSENSI_GURU,
   INITIAL_LOG_JELANTAH,
@@ -25,9 +35,9 @@ export default function App() {
   const userEmail = 'suryadi111@guru.smp.belajar.id';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRabA0NiKtZ1pK8Sguile9-U46T30qKUE5XGQABrqfjrav8rkA30OZarc4xkoBbB46/exec';
 
-  // State management for 7 modules
-  const [siswaList, setSiswaList] = useState<Siswa[]>(INITIAL_SISWA);
-  const [guruList, setGuruList] = useState<Guru[]>(INITIAL_GURU);
+  // State management diselaraskan menggunakan Data_Master_Siswa & Data_Master_Guru
+  const [siswaList, setSiswaList] = useState<Data_Master_Siswa[]>(INITIAL_DATA_MASTER_SISWA);
+  const [guruList, setGuruList] = useState<Data_Master_Guru[]>(INITIAL_DATA_MASTER_GURU);
   const [logAbsensiSiswa, setLogAbsensiSiswa] = useState<LogAbsensiSiswa[]>(INITIAL_LOG_ABSENSI_SISWA);
   const [logAbsensiGuru, setLogAbsensiGuru] = useState<LogAbsensiGuru[]>(INITIAL_LOG_ABSENSI_GURU);
   const [logJelantah, setLogJelantah] = useState<LogMinyakJelantah[]>(INITIAL_LOG_JELANTAH);
@@ -41,57 +51,52 @@ export default function App() {
     const fetchSheetData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(APPS_SCRIPT_URL);
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'GET',
+          redirect: 'follow',
+        });
         const result = await res.json();
 
         // Mengurai hasil pemanggilan jika status success atau data ada
         const data = result.data || result;
 
         if (data) {
-          // Sync Master Siswa
+          // Sync Data_Master_Siswa
           if (data.Data_Master_Siswa && data.Data_Master_Siswa.length > 0) {
-            const mappedSiswa: Siswa[] = data.Data_Master_Siswa.map((item: any) => ({
+            const mappedSiswa: Data_Master_Siswa[] = data.Data_Master_Siswa.map((item: any) => ({
               nis: String(item.NIS || item.nis || ''),
-              nama: item['Nama Siswa'] || item.nama || '',
+              nama: item['Nama Siswa'] || item.Nama || item.nama || '',
               kelas: item.Kelas || item.kelas || '',
-              jenisKelamin: item['Jenis Kelamin'] || item.jenisKelamin || 'Laki-laki',
-              noHp: String(item['No HP'] || item.noHp || '')
+              jenisKelamin: (item['Jenis Kelamin'] === 'P' || item['Jenis Kelamin'] === 'Perempuan') ? 'Perempuan' : 'Laki-laki',
+              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || '')
             }));
             setSiswaList(mappedSiswa);
           }
 
-          // Sync Master Guru
+          // Sync Data_Master_Guru
           if (data.Data_Master_Guru && data.Data_Master_Guru.length > 0) {
-            const mappedGuru: Guru[] = data.Data_Master_Guru.map((item: any) => ({
+            const mappedGuru: Data_Master_Guru[] = data.Data_Master_Guru.map((item: any) => ({
               nip: String(item.NIP || item.nip || ''),
-              nama: item['Nama Guru'] || item.nama || '',
+              nama: item['Nama Guru'] || item.Nama || item.nama || '',
               jabatan: item.Jabatan || item.jabatan || '',
-              noHp: String(item['No HP'] || item.noHp || '')
+              noHp: String(item['No HP'] || item['No. HP / Whatsapp'] || item.noHp || '')
             }));
             setGuruList(mappedGuru);
           }
 
-          // Sync Log Absensi Siswa
+          // Sync Logs
           if (data.Log_Absensi_Siswa && data.Log_Absensi_Siswa.length > 0) {
             setLogAbsensiSiswa(data.Log_Absensi_Siswa);
           }
-
-          // Sync Log Absensi Guru
           if (data.Log_Absensi_Guru && data.Log_Absensi_Guru.length > 0) {
             setLogAbsensiGuru(data.Log_Absensi_Guru);
           }
-
-          // Sync Log Minyak Jelantah
           if (data.Log_Minyak_Jelantah && data.Log_Minyak_Jelantah.length > 0) {
             setLogJelantah(data.Log_Minyak_Jelantah);
           }
-
-          // Sync Log Pelanggaran
           if (data.Log_Pelanggaran && data.Log_Pelanggaran.length > 0) {
             setLogPelanggaran(data.Log_Pelanggaran);
           }
-
-          // Sync Log Masa Haid
           if (data.Log_Masa_Haid && data.Log_Masa_Haid.length > 0) {
             setLogHaid(data.Log_Masa_Haid);
           }
@@ -106,7 +111,7 @@ export default function App() {
     fetchSheetData();
   }, [APPS_SCRIPT_URL]);
 
-  // Scan handlers dengan integrasi Google Sheets
+  // Handlers
   const handleAddAbsensiSiswa = (entry: LogAbsensiSiswa) => {
     setLogAbsensiSiswa(prev => [entry, ...prev]);
     fetch(APPS_SCRIPT_URL, {
