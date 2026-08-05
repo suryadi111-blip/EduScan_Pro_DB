@@ -49,17 +49,30 @@ export default function App() {
     const fetchSheetData = async () => {
       try {
         setIsLoading(true);
-        // Menghapus 'redirect: follow' & custom headers untuk mencegah pemblokiran CORS oleh browser
-        const res = await fetch(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
+        let responseJson: any = null;
+
+        // Upaya 1: Fetch langsung ke Google Apps Script
+        try {
+          const directRes = await fetch(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`);
+          if (directRes.ok) {
+            responseJson = await directRes.json();
+          }
+        } catch (directErr) {
+          console.warn('Direct fetch diblokir CORS browser, mencoba via CORS Proxy...', directErr);
         }
 
-        const responseJson = await res.json();
+        // Upaya 2: Jika fetch langsung gagal/CORS error, gunakan CORS Proxy
+        if (!responseJson) {
+          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`${APPS_SCRIPT_URL}?t=${new Date().getTime()}`)}`;
+          const proxyRes = await fetch(proxyUrl);
+          if (proxyRes.ok) {
+            responseJson = await proxyRes.json();
+          }
+        }
+
         console.log('--- RESPONS API GOOGLE SHEETS ---', responseJson);
 
-        const data = responseJson.data || responseJson;
+        const data = responseJson?.data || responseJson;
 
         if (data) {
           // Mapping Data Master Siswa
@@ -93,7 +106,7 @@ export default function App() {
           if (data.Log_Masa_Haid && Array.isArray(data.Log_Masa_Haid)) setLogHaid(data.Log_Masa_Haid);
         }
       } catch (err) {
-        console.error('Error saat fetch data:', err);
+        console.error('Gagal memuat data dari API Google Sheets:', err);
       } finally {
         setIsLoading(false);
       }
@@ -102,13 +115,13 @@ export default function App() {
     fetchSheetData();
   }, [APPS_SCRIPT_URL]);
 
-  // Handlers POST data ke Google Sheets
+  // Handlers POST data ke Google Sheets (Menggunakan mode: 'no-cors' agar selalu berhasil melempar data)
   const handleAddAbsensiSiswa = (entry: LogAbsensiSiswa) => {
     setLogAbsensiSiswa(prev => [entry, ...prev]);
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addAbsensiSiswa', data: entry }),
     }).catch(err => console.error(err));
   };
@@ -118,7 +131,7 @@ export default function App() {
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addAbsensiGuru', data: entry }),
     }).catch(err => console.error(err));
   };
@@ -128,7 +141,7 @@ export default function App() {
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addJelantah', data: entry }),
     }).catch(err => console.error(err));
   };
@@ -138,7 +151,7 @@ export default function App() {
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addPelanggaran', data: entry }),
     }).catch(err => console.error(err));
   };
@@ -148,7 +161,7 @@ export default function App() {
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addHaid', data: entry }),
     }).catch(err => console.error(err));
   };
